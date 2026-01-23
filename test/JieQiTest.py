@@ -26,3 +26,41 @@ class JieQiTest(unittest.TestCase):
     def test3(self):
         lunar = Lunar.fromYmd(2025, 6, 1)
         self.assertEqual("2025-06-05 17:56:32", lunar.getJieQiTable()["芒种"].toYmdHms())
+
+    def test_setName_reset_jie_to_qi(self):
+        """Test that setName properly resets state when changing from 节 to 气"""
+        from lunar_python import JieQi
+        solar = Solar.fromYmd(2021, 12, 21)
+        # 小寒 is a 节 (odd index in JIE_QI)
+        jq = JieQi("小寒", solar)
+        self.assertTrue(jq.isJie())
+        self.assertFalse(jq.isQi())
+        # Change to 冬至 which is a 气 (even index in JIE_QI)
+        jq.setName("冬至")
+        self.assertFalse(jq.isJie())
+        self.assertTrue(jq.isQi())
+
+    def test_setName_reset_qi_to_jie(self):
+        """Test that setName properly resets state when changing from 气 to 节"""
+        from lunar_python import JieQi
+        solar = Solar.fromYmd(2021, 12, 21)
+        # 冬至 is a 气 (even index in JIE_QI)
+        jq = JieQi("冬至", solar)
+        self.assertFalse(jq.isJie())
+        self.assertTrue(jq.isQi())
+        # Change to 小寒 which is a 节 (odd index in JIE_QI)
+        jq.setName("小寒")
+        self.assertTrue(jq.isJie())
+        self.assertFalse(jq.isQi())
+
+    def test_setName_unknown(self):
+        """Test that unknown name leaves both jie and qi as False"""
+        from lunar_python import JieQi
+        solar = Solar.fromYmd(2021, 12, 21)
+        jq = JieQi("冬至", solar)
+        self.assertTrue(jq.isQi())
+        # Set to unknown name
+        jq.setName("未知节气")
+        self.assertFalse(jq.isJie())
+        self.assertFalse(jq.isQi())
+        self.assertEqual("未知节气", jq.getName())
