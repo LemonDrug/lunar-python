@@ -93,3 +93,70 @@ class SolarTest(unittest.TestCase):
 
     def test22(self):
         self.assertEqual("2025-08-31", Solar.fromYmd(2023, 8, 31).nextYear(2).toYmd())
+
+    def test_invalid_day_zero(self):
+        """day=0 should raise"""
+        with self.assertRaises(Exception):
+            Solar.fromYmd(2020, 1, 0)
+
+    def test_invalid_day_32(self):
+        """day=32 should raise for any month"""
+        with self.assertRaises(Exception):
+            Solar.fromYmd(2020, 1, 32)
+
+    def test_invalid_day_feb30(self):
+        """Feb 30 should raise"""
+        with self.assertRaises(Exception):
+            Solar.fromYmd(2020, 2, 30)
+
+    def test_invalid_day_feb29_non_leap(self):
+        """Feb 29 in non-leap year should raise"""
+        with self.assertRaises(Exception):
+            Solar.fromYmd(2019, 2, 29)
+
+    def test_valid_day_feb29_leap(self):
+        """Feb 29 in leap year should be valid"""
+        solar = Solar.fromYmd(2020, 2, 29)
+        self.assertEqual("2020-02-29", solar.toYmd())
+
+    def test_valid_day_feb28_non_leap(self):
+        """Feb 28 in non-leap year should be valid"""
+        solar = Solar.fromYmd(2019, 2, 28)
+        self.assertEqual("2019-02-28", solar.toYmd())
+
+    def test_invalid_month_zero(self):
+        """month=0 should raise"""
+        with self.assertRaises(Exception):
+            Solar.fromYmd(2020, 0, 1)
+
+    def test_invalid_month_13(self):
+        """month=13 should raise"""
+        with self.assertRaises(Exception):
+            Solar.fromYmd(2020, 13, 1)
+
+    def test_valid_1582_oct_4(self):
+        """1582-10-04 is valid (last day before Julian gap)"""
+        solar = Solar.fromYmd(1582, 10, 4)
+        self.assertEqual("1582-10-04", solar.toYmd())
+
+    def test_invalid_1582_oct_5_to_14(self):
+        """1582-10-05 to 1582-10-14 should raise (Julian calendar gap)"""
+        for d in range(5, 15):
+            with self.assertRaises(Exception):
+                Solar.fromYmd(1582, 10, d)
+
+    def test_valid_1582_oct_15(self):
+        """1582-10-15 is valid (first day of Gregorian)"""
+        solar = Solar.fromYmd(1582, 10, 15)
+        self.assertEqual("1582-10-15", solar.toYmd())
+
+    def test_1582_oct_max_day(self):
+        """1582-10 valid days are 1-4 and 15-31"""
+        solar = Solar.fromYmd(1582, 10, 31)
+        self.assertEqual("1582-10-31", solar.toYmd())
+        # Day 22 is valid (after the gap)
+        solar = Solar.fromYmd(1582, 10, 22)
+        self.assertEqual("1582-10-22", solar.toYmd())
+        # Day 32 should raise
+        with self.assertRaises(Exception):
+            Solar.fromYmd(1582, 10, 32)
